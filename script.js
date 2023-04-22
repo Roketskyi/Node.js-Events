@@ -43,7 +43,7 @@ class TemperatureSensor extends EventEmitter {
                     "Name": "Temperature Tracker"
                 },
                 "To": [{
-                    "Email": "romanroketskiy05@gmail.com",
+                    "Email": "YOU-EMAIL@gmail.com",
                     "Name": "Temperature Tracker"
                 }],
                 "Subject": `Середня температура повітря для дати ${date}`,
