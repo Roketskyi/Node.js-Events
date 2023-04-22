@@ -1,6 +1,12 @@
 const EventEmitter = require('events');
 const fs = require('fs');
 
+const Mailjet = require('node-mailjet')
+const mailjet = new Mailjet({
+  apiKey: "4ca14c170f7ca87f0c03b84db91545ea",
+  apiSecret: "be3ebbb526be2508758ba86c8f6530e7"
+});
+
 class TemperatureSensor extends EventEmitter {
   constructor() {
     super();
@@ -26,7 +32,32 @@ class TemperatureSensor extends EventEmitter {
     }
     const totalTemperature = temperaturesForDate.reduce((acc, val) => acc + val, 0);
     const averageTemperature = totalTemperature / temperaturesForDate.length;
-    console.log(`Середня температура повітря для дати ${date}: ${averageTemperature}`);
+    console.log(`Середня температура повітря для дати ${date}: ${averageTemperature} градуси`);
+ 
+    const request = mailjet
+        .post("send", {'version': 'v3.1'})
+        .request({
+            "Messages":[{
+                "From": {
+                    "Email": "temperaturesinyoudasd@gmail.com",
+                    "Name": "Temperature Tracker"
+                },
+                "To": [{
+                    "Email": "romanroketskiy05@gmail.com",
+                    "Name": "Temperature Tracker"
+                }],
+                "Subject": `Середня температура повітря для дати ${date}`,
+                "TextPart": `Середня температура повітря для дати ${date}: ${averageTemperature}`,
+                "HTMLPart": `<h3>Середня температура повітря для дати ${date}: ${averageTemperature} °C</h3>`
+            }]
+        })
+    request
+        .then((result) => {
+            console.log(result.body.Messages[0].Status)
+        })
+        .catch((err) => {
+            console.log(err.statusCode)
+        })
   }
   
   saveTemperatures() {
@@ -72,7 +103,7 @@ sensor.on('highTemperature', ({date, temperature}) => {
 sensor.on('temperaturesLoaded', () => {
   sensor.addTemperature("2023-04-20", [25, 45]);
   sensor.addTemperature("2023-04-21", [30, 20, 25, 15, 25]);
-  sensor.addTemperature("2023-04-22", []);
+  sensor.addTemperature("2023-04-22", [20]);
 
   sensor.getAverageTemperature("2023-04-20");
   sensor.getAverageTemperature("2023-04-21");
